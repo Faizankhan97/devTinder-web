@@ -8,6 +8,7 @@ import { BASE_URL } from "../utils/contants";
 const Login = () => {
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -26,7 +27,7 @@ const Login = () => {
       dispatch(addUser(res.data));
       navigate("/");
     } catch (error) {
-      console.log(error);
+      setError(error?.message);
     }
   };
   return (
@@ -60,6 +61,7 @@ const Login = () => {
               />
             </label>
           </div>
+          <p className="text-red-500">{error}</p>
           <div className="card-actions justify-end">
             <button className="btn btn-primary" onClick={handleLoginButton}>
               Login
