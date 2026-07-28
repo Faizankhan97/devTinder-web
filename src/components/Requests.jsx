@@ -2,11 +2,22 @@ import axios from "axios";
 import { BASE_URL } from "../utils/contants";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addRequests } from "../utils/requestSlice";
+import { addRequests, removeRequests } from "../utils/requestSlice";
 
 const Requests = () => {
   const requests = useSelector((state) => state.requests);
   const dispatch = useDispatch();
+
+  const reviewRequest = async (status, _id) => {
+    try {
+      await axios.post(BASE_URL + "/user/requests/" + status + "/" + _id, {
+        withCredentials: true,
+      });
+      dispatch(removeRequests(_id));
+    } catch (error) {
+      console.error("Error Fetching Requests:", error);
+    }
+  };
 
   const fetchRequests = async () => {
     try {
@@ -59,6 +70,20 @@ const Requests = () => {
                   <li key={index}>{skill}</li>
                 ))}
               </ul>
+              <div>
+                <button
+                  className="btn btn-primary mx-3"
+                  onClick={() => reviewRequest("rejected", request._id)}
+                >
+                  Reject
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => reviewRequest("accepted", request._id)}
+                >
+                  Accept
+                </button>
+              </div>
             </div>
           </div>
         ))}
