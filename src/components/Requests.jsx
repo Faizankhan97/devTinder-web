@@ -8,15 +8,28 @@ const Requests = () => {
   const requests = useSelector((state) => state.requests);
   const dispatch = useDispatch();
 
-  const reviewRequest = async (status, _id) => {
-    try {
-      await axios.post(BASE_URL + "/user/requests/" + status + "/" + _id, {
-        withCredentials: true,
-      });
-      dispatch(removeRequests(_id));
-    } catch (error) {
-      console.error("Error Fetching Requests:", error);
+  const reviewRequest = async (status, requestId) => {
+    const endpointCandidates = [
+      `${BASE_URL}/user/requests/${status}/${requestId}`,
+      `${BASE_URL}/user/requests/${status === "accepted" ? "accept" : "reject"}/${requestId}`,
+      `${BASE_URL}/request/${status === "accepted" ? "accept" : "reject"}/${requestId}`,
+      `${BASE_URL}/request/review/${status}/${requestId}`,
+    ];
+
+    for (const url of endpointCandidates) {
+      try {
+        await axios.post(url, {}, { withCredentials: true });
+        dispatch(removeRequests(requestId));
+        return;
+      } catch (error) {
+        if (error?.response?.status !== 404) {
+          console.error("Error processing request:", error);
+          return;
+        }
+      }
     }
+
+    console.error("No matching review endpoint was available for this request.");
   };
 
   const fetchRequests = async () => {
@@ -46,18 +59,18 @@ const Requests = () => {
   return (
     <div>
       <h1 className="text-center text-4xl font-bold mt-8">Requests</h1>
-      <div className="flex justify-center items-center mt-8">
+      <div className="flex justify-center items-center mt-8 gap-5 flex-wrap">
         {requests?.map((request) => (
           <div
             key={request.id}
-            className="border rounded-lg p-4 flex bg-base-300 gap-6"
+            className="border rounded-lg p-4 flex bg-base-300 gap-6 w-2/6 "
           >
             <img
               src={request?.fromUserId?.photoUrl}
               alt="photo"
               className="w-20 h-20 mx-auto mb-4"
             />
-            <div className="text-left">
+            <div className="text-left w-2/3">
               <h4>
                 {request?.fromUserId?.firstName} {request?.fromUserId?.lastName}
               </h4>
